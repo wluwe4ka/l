@@ -167,6 +167,37 @@ async def catboy_inline_handler(self, query: InlineQuery) -> None:
     )
 
 ```
+## Инлайн-список
+Много информации, которую надо разбить на *страницы*? (встроенные списки)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L28]
+
+### Референс:
+```python
+async def list(
+        self,
+        message: Union[Message, int],
+        strings: List[str],
+        *,
+        force_me: bool = False,
+        always_allow: Union[list, None] = None,
+        ttl: Union[int, bool] = False,
+        on_unload: Union[FunctionType, None] = None,
+        manual_security: bool = False,
+    ) -> Union[bool, str]:
+```
+### Пример
+```python
+async def meancmd(self, message: Message) -> None:
+    """<term> - Find definition of the word in urban dictionary"""
+    args = utils.get_args_raw(message)
+
+    ...
+
+    await self.inline.list(
+        message=message,
+        strings=[self.strings("meaning").format(args, mean) for mean in means],
+    )
+
+```
 
 ## Обработка нажатий (вариант 1)
 Есть несколько вариантов обработки нажатий. Если ты хочешь, чтобы кнопка жила **бесконечное** количество времени, ты можешь использовать опцию `data`.
@@ -279,11 +310,11 @@ from .. import utils
 
 ### Полезные сокращения
 
-`await query.e400()` - Неверные аргументы
-`await query.e403()` - Недостаточно прав для доступа к ресурсу
-`await query.e404()` - Требуемый результат не найден
-`await query.e426()` - Необходимо обновление юзербота
-`await query.e500()` - Ошибка модуля. Смотри логи
+- `await query.e400()` - Неверные аргументы
+- `await query.e403()` - Недостаточно прав для доступа к ресурсу
+- `await query.e404()` - Требуемый результат не найден
+- `await query.e426()` - Необходимо обновление юзербота
+- `await query.e500()` - Ошибка модуля. Смотри логи
 
 ### Правильный ответ на Inline запрос
 
