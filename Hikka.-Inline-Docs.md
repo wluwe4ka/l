@@ -280,7 +280,7 @@ call.form  # optional: Contains info about form
 ## Inline команды (@bot ...)
 Для обработки инлайн команд Hikka использует обработчики, созданные по шаблону, наподобие командам.
 ```python
-from ..inline import InlineQuery
+from ..inline.types import InlineQuery
 
 async def <name>_inline_handler(self, query: InlineQuery) -> None:
     # Process request
