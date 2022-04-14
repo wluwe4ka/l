@@ -14,11 +14,16 @@ async def form(
     self,
     text: str,
     message: Union[Message, int],
-    reply_markup: List[List[dict]] = None,
-    force_me: bool = True,
+    reply_markup: Union[List[List[dict]], List[dict], dict] = None,
+    *,
+    force_me: bool = False,
     always_allow: Union[List[list], None] = None,
+    manual_security: bool = False,
+    disable_security: bool = False,
     ttl: Union[int, bool] = False,
     on_unload: Union[FunctionType, None] = None,
+    photo: Union[str, None] = None,
+    silent: bool = False,
 ) -> Union[str, bool]:
 ```
 ### Пример:
@@ -100,12 +105,15 @@ async def gallery(
     next_handler: Union[FunctionType, List[str]],
     caption: Union[str, FunctionType] = "",
     *,
-    force_me: bool = True,
+    force_me: bool = False,
     always_allow: Union[list, None] = None,
+    manual_security: bool = False,
+    disable_security: bool = False,
     ttl: Union[int, bool] = False,
     on_unload: Union[FunctionType, None] = None,
     preload: Union[bool, int] = False,
     gif: bool = False,
+    silent: bool = False,
     _reattempt: bool = False,
 ) -> Union[bool, str]:
 ```
@@ -136,7 +144,8 @@ async def query_gallery(
     query: InlineQuery,
     items: List[dict],
     *,
-    force_me: bool = True,
+    force_me: bool = False,
+    disable_security: bool = False,
     always_allow: Union[list, None] = None,
 ) -> None:
 ```
@@ -170,16 +179,18 @@ async def catboy_inline_handler(self, query: InlineQuery) -> None:
 ### Референс:
 ```python
 async def list(
-        self,
-        message: Union[Message, int],
-        strings: List[str],
-        *,
-        force_me: bool = False,
-        always_allow: Union[list, None] = None,
-        ttl: Union[int, bool] = False,
-        on_unload: Union[FunctionType, None] = None,
-        manual_security: bool = False,
-    ) -> Union[bool, str]:
+    self,
+    message: Union[Message, int],
+    strings: _List[str],
+    *,
+    force_me: bool = False,
+    always_allow: Union[list, None] = None,
+    manual_security: bool = False,
+    disable_security: bool = False,
+    ttl: Union[int, bool] = False,
+    on_unload: Union[FunctionType, None] = None,
+    silent: bool = False,
+) -> Union[bool, str]:
 ```
 ### Пример
 ```python
@@ -276,7 +287,15 @@ async def <name>_inline_handler(self, query: InlineQuery) -> None:
 ```
 Внутри объекта query доступен атрибут args, который содержит в себе текст, указанный после команды (@bot <name> **some text here**)
 
-Отвечать на этот запрос необходимо так же, как и в `aiogram`. Для подробной информации, читай **их документацию**.
+Эти обработчики можно оборачивать в декораторы, прямо как команды. Для инлайн обработчиков доступны следующие декораторы:
+- `@loader.support`
+- `@loader.sudo`
+- `@loader.owner`
+- `@loader.inline_everyone`
+
+Все они управляются пользователем с помощью команды `.inlinesec`, в том числе и глобальная маска.
+
+Отвечать на этот запрос **можно** так же, как и в `aiogram` (а можно воспользоваться встроенными методами, читай ниже). Для подробной информации, читай **их документацию**.
 
 Для примера привожу кусок кода из `inline.py`, отвечающий за вывод всех доступных команд:
 ```python
