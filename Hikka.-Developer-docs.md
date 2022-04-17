@@ -190,6 +190,17 @@ def chunks(_list: Union[list, tuple, set], n: int, /) -> list:
 ## strings
 Хоть они и объявляются как словарь, на самом деле это не словарь. Их можно вызывать. Сделано это для упрощения локализации. Все строки, которые можно вынести в strings - выноси в strings. В этом же словаре объявляется отображаемое имя модуля. Старайся выбирать имя без пробелов, спецсимволов и другого шлака.
 
+Можно создавать отдельный словарь `strings_ru`, система **HikkaDynamicTranslate** автоматически загрузит эти переводы, и покажет их пользователю, если у него установлен русский язык.
+Пример:
+```python
+...
+strings = {"name": "SomeModuleName", "hello_text": "Hello, world!"}
+strings_ru = {"hello_text": "Привет, мир!"}
+...
+await utils.answer(message, self.strings("hello_text"))
+```
+**Крайне не рекомендуется в `strings_ru` выносить название модуля (ключ `name`)
+
 ## db
 База данных FTG. Практически всегда сохраняется в атрибут self.db или self.\_db.
 
@@ -200,7 +211,7 @@ db.get(owner: str, key: str, default: Any = None) -> Many
 ---
 Установка значения ключа базы данных
 ```python
-db.set(owner: str, key: str, value: str) -> None
+db.set(owner: str, key: str, value: str) -> bool
 ```
 ---
 > Документация будет пополняться
