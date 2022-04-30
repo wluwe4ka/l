@@ -220,8 +220,8 @@ db.set(owner: str, key: str, value: str) -> bool
 Для каждого модуля доступны атрибуты `fast_upload` и `fast_download`
 Пример использования:
 ```python
-def downloadcmd(self, message: Message):
-    def my_callback(current: int, total: int):
+async def downloadcmd(self, message: Message):
+    async def my_callback(current: int, total: int):
         nonlocal message
         percentage = round(current * 100 / total)
         if percentage % 10 != 0:
@@ -233,8 +233,8 @@ def downloadcmd(self, message: Message):
 ```
 
 ```python
-def uploadcmd(self, message: Message):
-    def my_callback(current: int, total: int):
+async def uploadcmd(self, message: Message):
+    async def my_callback(current: int, total: int):
         nonlocal message
         percentage = round(current * 100 / total)
         if percentage % 10 != 0:
