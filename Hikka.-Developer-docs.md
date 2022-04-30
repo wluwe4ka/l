@@ -214,4 +214,38 @@ db.get(owner: str, key: str, default: Any = None) -> Many
 db.set(owner: str, key: str, value: str) -> bool
 ```
 ---
+# FastUploader
+
+В Hikka есть удобная поддержка Telethon Fast Uploader
+Для каждого модуля доступны атрибуты `fast_upload` и `fast_download`
+Пример использования:
+```python
+def downloadcmd(self, message: Message):
+    def my_callback(current: int, total: int):
+        nonlocal message
+        percentage = round(current * 100 / total)
+        if percentage % 10 != 0:
+            return
+        
+        message = await utils.answer(message, f"<b>Downloading File... Progress {percentage}%/100%</b>")
+
+    await self.fast_download(reply.document, my_callback)
+```
+
+```python
+def uploadcmd(self, message: Message):
+    def my_callback(current: int, total: int):
+        nonlocal message
+        percentage = round(current * 100 / total)
+        if percentage % 10 != 0:
+            return
+        
+        message = await utils.answer(message, f"<b>Uploading File... Progress {percentage}%/100%</b>")
+
+    file = io.BytesIO("this can be a file".encode("utf-8"))
+    file.name = "file.txt"
+
+    await self.fast_upload(file, my_callback)
+```
+---
 > Документация будет пополняться
