@@ -1,6 +1,7 @@
 # Встроенные декораторы.
 `@loader.tds` позволяет динамически переводить модули.
 - `"_cmd_doc_commandname"` - Перевод команды
+- `"_ihandle_doc_handlername"`
 - `"_cls_doc"` - Перевод описания модуля
 Эти ключи надо класть в `strings_ru`
 ---
@@ -37,7 +38,7 @@ def loop(
     :param interval: Loop iterations delay
     :param autostart: Start loop once module is loaded
     :param wait_before: Insert delay before actual iteration, rather than after
-    :param stop_clase: Database key, based on which the loop will run.
+    :param stop_clause: Database key, based on which the loop will run.
                        This key will be set to `True` once loop is started,
                        and will stop after key resets to `False`
     :attr status: Boolean, describing whether the loop is running
