@@ -1,12 +1,12 @@
-# Встроенные декораторы.
-`@loader.tds` позволяет динамически переводить модули.
-- `"_cmd_doc_commandname"` - Перевод команды
-- `"_ihandle_doc_handlername"`
-- `"_cls_doc"` - Перевод описания модуля
-Эти ключи надо класть в `strings_ru`
+# Built-in decorators.
+`@loader.tds` provides dynamic translate to commands \ class description.
+- `"_cmd_doc_commandname"` - Translate command
+- `"_ihandle_doc_handlername"` - Translate inline command
+- `"_cls_doc"` - Translate module doc
+This keys are not mandatory in main `strings`. You can put them in `strings_..` to translate docs to other languages
 ---
-## Стандартные права для команд
-Например, команде `.mute` можно по умолчанию дать разрешение на выполнение администраторам чата с правом на бан пользователей. Для этого можно использовать следующие декораторы с говорящими именами:
+## Default commands permissions
+E.g., for command `.mute` you can give default permission to admins who can ban users. For that you can use these decorators:
 - `@loader.owner`
 - `@loader.sudo`
 - `@loader.support`
@@ -23,9 +23,9 @@
 - `@loader.unrestricted`
 - `@loader.inline_everyone`
 ---
-## Бесконечные циклы
+## Infinite loops
 `@loader.loop`
-*Референс:*
+*Reference:*
 ```python
 def loop(
     interval: int = 5,
