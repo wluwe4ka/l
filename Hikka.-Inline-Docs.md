@@ -250,7 +250,7 @@ async def catboy_inline_handler(self, query: InlineQuery):
 ## Inline list
 You can use (inline lists)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L30]
 
-### Референс:
+### Reference:
 ```python
 async def list(
     self,
