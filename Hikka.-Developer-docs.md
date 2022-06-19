@@ -1,197 +1,56 @@
-## Общая структура
-Любой модуль начинается с:
+## Basic sctructure
+Any module starts with:
 
-- Лицензии
-- Скопов
-- Импорта зависимостей
-- Подключения логирования
-- Класса модуля, обернутого в декоратор @loader.tds
-- Объявления базовых обработчиков
-
-
-Все остальные действия выполняются внутри этого класса\*.
-
-\*Важное примечание. Если функция не использует атрибуты и методы класса (`self.что-то`), ее стоит объявление стоит вынести за пределы класса, либо сделать статичным методом (`@staticmethod`)
+- License
+- Scopes
+- Dependencies import
+- Logging init
+- Module class, wrapped with @loader.tds
+- Declaring basic handlers
 
 
-## Справочник по структуре
+All other actions live in module class\*.
 
-`@loader.tds`
-Декоратор, используемый на классе модуля. Нужен для добавления возможности локализации докстрингов команд.
+\*Notice. If method doesn't use `self` (`self.anything`), it should be declared as [static](https://stackoverflow.com/a/735978/19170642) *except of commands, watchers and other stuff, used by Hikka under the hood*
+
+
+## Structure docs
+
+```python
+def __init__(self):
+```
+Used only for config definition
 
 
 ```python
-def __init__(self) -> None:
+async def client_ready(self, client, db):
 ```
-Вызывается при начале загрузки модуля. Обычно используется только для инициализации конфига.
+It's called when module is inited. Frequently used to start handlers, init APIs etc.
 
 
 ```python
-async def client_ready(self, client, db) -> None:
+async def on_unload(self):
 ```
-Вызывается в момент, когда готовы все инстансы (`client`, `db`). Основное место инициализации. Чаще всего здесь объявляют внутренние переменные, готовят базу данных, запускают нужные корутины и другие вещи, которые нужны при загрузке.
-
-
-```python
-async def on_unload(self) -> None:
-```
-Вызывается в момент выгрузки модуля. Максимальное время выполнения - 5 секунд, при превышении код прерывается. Используется для сброса бесконечных циклов и других действий, нужных при выгрузке \ перезагрузке модуля.
+It's called when module is being unloaded. Here you can stop loops, exit APIs etc.
 
 ```python
-async def testcmd(self, message: Message) -> None:
+async def testcmd(self, message: Message):
 ```
-Таким образом выглядят обработчики команд. Все функции класса, которые заканчиваются на -cmd расцениваются как команды. Обратите внимание, что нельзя создать команду, которая начинается с цифры, содержит спецсимволы и др. Действуют те же ограничения, что и на обычные функции Python.
+Handler of command. Any method, which ends with `cmd` will be considered as command
 
 ```python
-async def watcher(self, message: Message) -> None:
+async def watcher(self, message: Message):
 ```
-Обработчик всех сообщений. В него приходят все события, которые вызваны другими сессиями (**не сессией юзербота**), включая сервисные сообщения.
+All messages handler. All message events trigger this, including service messages
 
 
 ## utils.py
-Для повышения совместимости модуля рекомендуется использовать библиотеку `utils`. Она содержит множество полезных методов:
-
-Возвращает список аргументов из сообщения
-```python
-def get_args(message: Message) -> List[str]:
-```
----
-
-Возвращает необработанные аргументы в виде одной строки
-```python
-def get_args_raw(message: Message) -> str:
-```
----
-
-Возвращает список аргументов, разделенных символом sep
-```python
-def get_args_split_by(message: Message, separator: str) -> List[str]:
-```
----
-
-Возвращает ID объекта (для чатов\каналов без -100)
-```python
-def get_chat_id(message: Message) -> int:
-```
----
-
-Экранирует HTML, данный в аргументе
-```python
-def escape_html(text: str, /) -> str:
-```
----
-Экранирует кавычки
-```python
-def escape_quotes(text: str, /) -> str:
-```
----
-
-Получает рабочую директорию
-```python
-def get_base_dir() -> str:
-```
----
-
-Получает директорию выбранного модуля
-```python
-def get_dir(mod: str) -> str:
-```
----
-
-Получает отправителя (не работает с сервисными сообщениями)
-```python
-async def get_user(message: Message) -> Union[None, User]:
-```
----
-
-Оборачивает синхронный код в коротину. Рекомендуется использовать тогда, когда нужно внутри модуля использовать синхронный код, чтобы не останавливать основной поток
-```python
-run_sync(func: FunctionType, *args, **kwargs) -> coroutine
-```
----
-Запускает асинхронный код синхронно
-```python
-def run_async(loop, coro):
-```
----
-Убирает потенциально компрометирующую информацию из telethon-объекта
-```python
-def censor(
-    obj,
-    to_censor=None,
-    replace_with="redacted_{count}_chars",
-):
-```
----
-
-Репозиционирование объектов и их смещений
-```python
-def relocate_entities(
-    entities: list,
-    offset: int,
-    text: Union[str, None] = None,
-) -> list:
-```
----
-
-Ответить на сообщение (редактировать, если возможно, иначе отправить новое)
-```python
-async def answer(
-    message: Union[Message, CallbackQuery],
-    response: str,
-    **kwargs,
-) -> list:
-```
----
-
-Получить ID вероятной цели
-```python
-async def get_target(message: Message, arg_no: int = 0) -> Union[int, None]:
-```
----
-
-Объединить два словаря
-```python
-def merge(a: dict, b: dict) -> dict:
-```
----
-
-Создать новый канал (если это требуется), и вернуть его entity
-```python
-async def asset_channel(
-    client: "TelegramClient",  # noqa: F821
-    title: str,
-    description: str,
-    *,
-    silent: bool = False,
-    archive: bool = False,
-) -> Tuple[Channel, bool]:
-```
----
-Замьютить канал\чат, отправить его в архив
-```python
-async def dnd(client: "TelegramClient", peer: Entity, archive: bool = True) -> bool:  # noqa: F821
-```
----
-
-Получить пермалинк на entity
-```python
-def get_link(user: Union[User, Channel], /) -> str:
-```
----
-
-Разделить `_list` на чанки по `n`
-```python
-def chunks(_list: Union[list, tuple, set], n: int, /) -> list:
-```
-
-
+For utils docs, read the source code with comments and docstrings: [utils.py](https://github.com/hikariatama/Hikka/blob/master/hikka/utils.py)
 
 ## strings
-Хоть они и объявляются как словарь, на самом деле это не словарь. Их можно вызывать. Сделано это для упрощения локализации. Все строки, которые можно вынести в strings - выноси в strings. В этом же словаре объявляется отображаемое имя модуля. Старайся выбирать имя без пробелов, спецсимволов и другого шлака.
-
-Можно создавать отдельный словарь `strings_ru`, система **HikkaDynamicTranslate** автоматически загрузит эти переводы, и покажет их пользователю, если у него установлен русский язык.
-Пример:
+This is not a dictionary. Used in translation purposes.
+You can create strings for other languages, e.g. `strings_ru`, **HikkaDynamicTranslate** will automatically read this translation and apply it if neccessary.
+Example:
 ```python
 ...
 strings = {"name": "SomeModuleName", "hello_text": "Hello, world!"}
@@ -199,53 +58,28 @@ strings_ru = {"hello_text": "Привет, мир!"}
 ...
 await utils.answer(message, self.strings("hello_text"))
 ```
-**Крайне не рекомендуется в `strings_ru` выносить название модуля (ключ `name`)
-
 ## db
-База данных FTG. Практически всегда сохраняется в атрибут self.db или self.\_db.
-
-Получение ключа из базы данных, заменяя его `default` в случае отсутствия:
+Get database value and replace it with `default` if not present:
 ```python
-db.get(owner: str, key: str, default: Any = None) -> Many
+self.get(key: str, default: Any = None)
 ```
 ---
-Установка значения ключа базы данных
+Set database value
 ```python
-db.set(owner: str, key: str, value: str) -> bool
+self.set(key: str, value: str)
 ```
 ---
 # FastUploader
-
-В Hikka есть удобная поддержка Telethon Fast Uploader
-Для каждого модуля доступны атрибуты `fast_upload` и `fast_download`
-Пример использования:
+Example:
 ```python
 async def downloadcmd(self, message: Message):
-    async def my_callback(current: int, total: int):
-        nonlocal message
-        percentage = round(current * 100 / total)
-        if percentage % 10 != 0:
-            return
-        
-        message = await utils.answer(message, f"<b>Downloading File... Progress {percentage}%/100%</b>")
-
-    await self.fast_download(reply.document, my_callback)
+    await self.fast_download(reply.document)
 ```
 
 ```python
 async def uploadcmd(self, message: Message):
-    async def my_callback(current: int, total: int):
-        nonlocal message
-        percentage = round(current * 100 / total)
-        if percentage % 10 != 0:
-            return
-        
-        message = await utils.answer(message, f"<b>Uploading File... Progress {percentage}%/100%</b>")
-
     file = io.BytesIO("this can be a file".encode("utf-8"))
     file.name = "file.txt"
 
-    await self.fast_upload(file, my_callback)
+    await self.fast_upload(file)
 ```
----
-> Документация будет пополняться
