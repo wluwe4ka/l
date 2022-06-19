@@ -1,14 +1,12 @@
-Для каждого модуля по умолчанию доступен атрибут `inline`. Все операции выполняются через него.
-
-## Скопы
-- Модули, использующие **любые** возможности этого режима должны содержать скопу (комментарий): `# scope: inline`
-- Если вы **не обрабатываете возможность** использования модуля на классическом FTG (`if hasattr(self, 'inline')`), необходимо также указать скоп (не обрабатывается юзерботом, но помогает анализаторам модулей): `# scope: hikka_only`
-- Если в модуле требуется **определенная** версия Hikka, для этого тоже есть скоп: `# scope: hikka_min 1.0.0`
+## Scopes
+- Modules, which use **any** inline features should contain `# scope: inline`
+- If module doesn't support FTG\GeekTG, specify `# scope: hikka_only`
+- If module requires certain Hikka version, use: `# scope: hikka_min 1.0.0`
 
 ## Создание формы
-Для создания кнопок в сообщении, используй встроенный [менеджер форм](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/form.py#L40):
+To create message buttons, use [form manager](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/form.py#L46):
 
-### Референс:
+### Reference:
 ```python
 async def form(
     self,
@@ -16,17 +14,52 @@ async def form(
     message: Union[Message, int],
     reply_markup: Union[List[List[dict]], List[dict], dict] = None,
     *,
-    force_me: bool = False,
-    always_allow: Union[List[list], None] = None,
-    manual_security: bool = False,
-    disable_security: bool = False,
-    ttl: Union[int, bool] = False,
-    on_unload: Union[FunctionType, None] = None,
-    photo: Union[str, None] = None,
-    silent: bool = False,
-) -> Union[str, bool]:
+    force_me: Optional[bool] = False,
+    always_allow: Optional[List[list]] = None,
+    manual_security: Optional[bool] = False,
+    disable_security: Optional[bool] = False,
+    ttl: Optional[int] = None,
+    on_unload: Optional[callable] = None,
+    photo: Optional[str] = None,
+    gif: Optional[str] = None,
+    file: Optional[str] = None,
+    mime_type: Optional[str] = None,
+    video: Optional[str] = None,
+    location: Optional[str] = None,
+    audio: Optional[str] = None,
+    silent: Optional[bool] = False,
+) -> Union[InlineMessage, bool]:
+    """
+    Send inline form to chat
+    :param text: Content of inline form. HTML markdown supported
+    :param message: Where to send inline. Can be either `Message` or `int`
+    :param reply_markup: List of buttons to insert in markup. List of dicts with keys: text, callback
+    :param force_me: Either this form buttons must be pressed only by owner scope or no
+    :param always_allow: Users, that are allowed to press buttons in addition to previous rules
+    :param ttl: Time, when the form is going to be unloaded. Unload means, that the form
+                buttons with inline queries and callback queries will become unusable, but
+                buttons with type url will still work as usual. Pay attention, that ttl can't
+                be bigger, than default one (1 day) and must be either `int` or `False`
+    :param on_unload: Callback, called when form is unloaded and/or closed. You can clean up trash
+                        or perform another needed action
+    :param manual_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                            If you want to avoid this, pass `manual_security=True`
+    :param disable_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                                If you want to disable all security checks on this form in particular, pass `disable_security=True`
+    :param photo: Attach a photo to the form. URL must be supplied
+    :param gif: Attach a gif to the form. URL must be supplied
+    :param file: Attach a file to the form. URL must be supplied
+    :param mime_type: Only needed, if `file` field is not empty. Must be either 'application/pdf' or 'application/zip'
+    :param video: Attach a video to the form. URL must be supplied
+    :param location: Attach a map point to the form. List/tuple must be supplied (latitude, longitude)
+                        Example: (55.749931, 48.742371)
+                        ⚠️ If you pass this parameter, you'll need to pass empty string to `text` ⚠️
+    :param audio: Attach a audio to the form. URL must be supplied
+    :param silent: Whether the form must be sent silently (w/o "Loading inline form..." message)
+    :return: If form is sent, returns :obj:`InlineMessage`, otherwise returns `False`
+    """
 ```
-### Пример:
+### Example:
 ```python
 await self.inline.form(
     text="📊 Poll Hikka vs. FTG\n🌘 Hikka: No votes\n😔 FTG: No votes",
@@ -54,9 +87,9 @@ await self.inline.form(
 ```
 ![Без имени-1](https://user-images.githubusercontent.com/36935426/157850552-ff489e8e-3f64-4139-b1d6-b95c430707c0.png)
 
-Примеры возможных кнопок разных типов:
+Buttons examples:
 
-### Кнопка с обработчиком в виде функции:
+### Button with function callback (most frequently used):
 ```python
 {
     "text": "Button with function",
@@ -65,21 +98,21 @@ await self.inline.form(
     "kwargs": {"arg1name": "arg1"},  # optional kwargs passed to callback
 }
 ```
-### Кнопка с кастомным обработчиком (button_callback_handler):
+### Button with custom payload (button_callback_handler):
 ```python
 {
     "text": "Button with custom payload",
     "data": "custom_payload",
 }
 ```
-### Кнопка со ссылкой:
+### Button with link:
 ```python
 {
     "text": "URL Button",
     "url": "https://example.com",
 }
 ```
-### Кнопка, которая просит пользователя ввести значение:
+### Button which asks user to input some value:
 ```python
 {
     "text": "✍️ Enter value",
@@ -90,34 +123,58 @@ await self.inline.form(
 }
 ```
 
-При создании, форма возвращает `False`, если произошла какая-то ошибка, либо строку с `form_uid`.
-
-> ⚠️ **При возникновении ошибки при создании формы, exception не поднимается!**
+> ⚠️ **If error occurs, no exception will be raised, only `False` returned !**
 
 ## Галерея
-В Hikka доступны [inline-галереи](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L42). Вызвать ее очень просто:
+There are [inline galleries](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L46)
 
-### Референс:
+### Reference:
 ```python
 async def gallery(
     self,
     message: Union[Message, int],
-    next_handler: Union[FunctionType, List[str]],
-    caption: Union[str, FunctionType] = "",
+    next_handler: Union[callable, List[str]],
+    caption: Optional[Union[List[str], str, callable]] = "",
     *,
-    force_me: bool = False,
-    always_allow: Union[list, None] = None,
-    manual_security: bool = False,
-    disable_security: bool = False,
-    ttl: Union[int, bool] = False,
-    on_unload: Union[FunctionType, None] = None,
-    preload: Union[bool, int] = False,
-    gif: bool = False,
-    silent: bool = False,
+    custom_buttons: Optional[Union[List[List[dict]], List[dict], dict]] = None,
+    force_me: Optional[bool] = False,
+    always_allow: Optional[list] = None,
+    manual_security: Optional[bool] = False,
+    disable_security: Optional[bool] = False,
+    ttl: Optional[Union[int, bool]] = False,
+    on_unload: Optional[callable] = None,
+    preload: Optional[Union[bool, int]] = False,
+    gif: Optional[bool] = False,
+    silent: Optional[bool] = False,
     _reattempt: bool = False,
-) -> Union[bool, str]:
+) -> Union[bool, InlineMessage]:
+    """
+    Send inline gallery to chat
+    :param caption: Caption for photo, or callable, returning caption
+    :param message: Where to send inline. Can be either `Message` or `int`
+    :param next_handler: Callback function, which must return url for next photo or list with photo urls
+    :param custom_buttons: Custom buttons to add above native ones
+    :param force_me: Either this gallery buttons must be pressed only by owner scope or no
+    :param always_allow: Users, that are allowed to press buttons in addition to previous rules
+    :param ttl: Time, when the gallery is going to be unloaded. Unload means, that the gallery
+                will become unusable. Pay attention, that ttl can't
+                be bigger, than default one (1 day) and must be either `int` or `False`
+    :param on_unload: Callback, called when gallery is unloaded and/or closed. You can clean up trash
+                        or perform another needed action
+    :param preload: Either to preload gallery photos beforehand or no. If yes - specify threshold to
+                    be loaded. Toggle this attribute, if your callback is too slow to load photos
+                    in real time
+    :param gif: Whether the gallery will be filled with gifs. If you omit this argument and specify
+                gifs in `next_handler`, Hikka will try to determine the filetype of these images
+    :param manual_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                            If you want to avoid this, pass `manual_security=True`
+    :param disable_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                                If you want to disable all security checks on this gallery in particular, pass `disable_security=True`
+    :param silent: Whether the gallery must be sent silently (w/o "Loading inline gallery..." message)
+    :return: If gallery is sent, returns :obj:`InlineMessage`, otherwise returns `False`
+    """
 ```
-### Пример
+### Example
 ```python
 def generate_caption() -> str:
     return random.choice(["Да", "Нет"])
@@ -131,30 +188,47 @@ await self.inline.gallery(
     caption=generate_caption,
 )
 ```
-Здесь `generate_caption` - функция, возвращающая описание фото
-`photo` - Асинхронная функция, возвращая следующую картинку (при нажатии на кнопку Next)
-> Вместо функции `generate_caption` можно передать обычную строку или лямбда-функцию
-## Инлайн-галерея
-Если ты хочешь, чтобы пользователь мог вызвать галерею через инлайн-запрос к боту (@hikka_xxxxxx_bot), используй (встроенные галереи)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L253]
+`generate_caption` - method, which returns caption
+`photo` - Async function, which returns photo(-s)
+> Instead of `generate_caption` you can pass string or list
+> Instead of `photo` you can pass list with urls
+## InlineQuery Galleries
+To allow user to call galleries via inline query (@hikka_xxxxxx_bot), user (built-in method)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/query_gallery.py#L14]
 
-### Референс:
+### Reference:
 ```python
 async def query_gallery(
     self,
     query: InlineQuery,
     items: List[dict],
     *,
-    force_me: bool = False,
-    disable_security: bool = False,
-    always_allow: Union[list, None] = None,
-) -> None:
+    force_me: Optional[bool] = False,
+    disable_security: Optional[bool] = False,
+    always_allow: Optional[list] = None,
+) -> bool:
+    """
+    Answer inline query with a bunch of inline galleries
+    :param query: `InlineQuery` which should be answered with inline gallery
+    :param items: Array of dicts with inline results.
+                    Each dict *must* has a:
+                        - `title` - The title of the result
+                        - `description` - Short description of the result
+                        - `next_handler` - Inline gallery handler. Callback or awaitable
+                    Each dict *can* has a:
+                        - `caption` - Caption of photo. Defaults to `""`
+                        - `force_me` - Whether the button must be accessed only by owner. Defaults to `False`
+                        - `disable_security` - Whether to disable the security checks at all. Defaults to `False`
+    :param force_me: Either this gallery buttons must be pressed only by owner scope or no
+    :param always_allow: Users, that are allowed to press buttons in addition to previous rules
+    :param disable_security: By default, Hikka will try to check security of gallery
+                                If you want to disable all security checks on this gallery in particular, pass `disable_security=True`
+    :return: Status of answer
+    """
 ```
-### Пример
+### Example
 ```python
-async def catboy_inline_handler(self, query: InlineQuery) -> None:
-    """
-    Send Catboys
-    """
+async def catboy_inline_handler(self, query: InlineQuery):
+    """Send Catboys"""
     await self.inline.query_gallery(
         query,
         [
@@ -173,8 +247,8 @@ async def catboy_inline_handler(self, query: InlineQuery) -> None:
     )
 
 ```
-## Инлайн-список
-Много информации, которую надо разбить на *страницы*? (встроенные списки)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L28]
+## Inline list
+You can use (inline lists)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L30]
 
 ### Референс:
 ```python
@@ -183,16 +257,36 @@ async def list(
     message: Union[Message, int],
     strings: _List[str],
     *,
-    force_me: bool = False,
-    always_allow: Union[list, None] = None,
-    manual_security: bool = False,
-    disable_security: bool = False,
-    ttl: Union[int, bool] = False,
-    on_unload: Union[FunctionType, None] = None,
-    silent: bool = False,
-) -> Union[bool, str]:
+    force_me: Optional[bool] = False,
+    always_allow: Optional[list] = None,
+    manual_security: Optional[bool] = False,
+    disable_security: Optional[bool] = False,
+    ttl: Optional[Union[int, bool]] = False,
+    on_unload: Optional[callable] = None,
+    silent: Optional[bool] = False,
+    custom_buttons: Optional[Union[_List[_List[dict]], _List[dict], dict]] = None,
+) -> Union[bool, InlineMessage]:
+    """
+    Send inline list to chat
+    :param message: Where to send list. Can be either `Message` or `int`
+    :param strings: List of strings, which should become inline list
+    :param force_me: Either this list buttons must be pressed only by owner scope or no
+    :param always_allow: Users, that are allowed to press buttons in addition to previous rules
+    :param ttl: Time, when the list is going to be unloaded. Unload means, that the list
+                will become unusable. Pay attention, that ttl can't
+                be bigger, than default one (1 day) and must be either `int` or `False`
+    :param on_unload: Callback, called when list is unloaded and/or closed. You can clean up trash
+                        or perform another needed action
+    :param manual_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                            If you want to avoid this, pass `manual_security=True`
+    :param disable_security: By default, Hikka will try to inherit inline buttons security from the caller (command)
+                                If you want to disable all security checks on this list in particular, pass `disable_security=True`
+    :param silent: Whether the list must be sent silently (w/o "Loading inline list..." message)
+    :param custom_buttons: Custom buttons to add above native ones
+    :return: If list is sent, returns :obj:`InlineMessage`, otherwise returns `False`
+    """
 ```
-### Пример
+### Example
 ```python
 async def meancmd(self, message: Message) -> None:
     """<term> - Find definition of the word in urban dictionary"""
@@ -206,53 +300,14 @@ async def meancmd(self, message: Message) -> None:
     )
 
 ```
-
-## Обработка нажатий (вариант 1)
-Есть несколько вариантов обработки нажатий. Если ты хочешь, чтобы кнопка жила **бесконечное** количество времени, ты можешь использовать опцию `data`.
+# Inline buttons processing
+Example, where along with callback 1 positional argument is passed
 ```python
-chat_id = 123123
-user_id = 321321
-...
-reply_markup=[
-    [
-        {
-            "text": "Unban",
-            "data": f"ub/{chat_id}/{user_id}",
-        }
-    ]
-],
-...
-```
-В такие кнопки нельзя передавать функцию, поэтому нажатия на них нужно обрабатывать вручную. Пример обработчика:
-```python
-async def actions_callback_handler(self, call: CallbackQuery) -> None:
-    """
-        Handles unmute\\unban button clicks
-        @allow: all
-    """
-    if not re.match(r"[fbmudw]{1,3}\/[-0-9]+\/[-#0-9]+", call.data):
-        return
-```
-Вместо проверки регулярным выражением, ты можешь проверять вручную. Например:
-```python
-if call.data.split("/")[0] not in {'ub', 'un', 'ufm'}:
-    return
-```
-В таком случае, пайлоад должен иметь вид:
-```
-ub/...
-un/...
-ufm/...
-```
-## Обработка нажатий (вариант 2)
-В случае, если ты передаешь в кнопку `callback` тебе не нужно вручную создавать **валидатор пайлоада**.
-
-Пример, в котором в обработчик передается один позиционный аргумент:
-```python
-async def _process_click_ai(self, call: CallbackQuery, arg1: str) -> None:
+from ..inline.types import InlineCall
+async def _process_click_ai(self, call: InlineCall, arg1: str):
     # Do some stuff
 ```
-В этом случае в `call` доступно еще несколько атрибутов у аргумента `call`:
+In this case you can also use:
 ```python
 await call.unload()  # Unload form from memory
 
@@ -275,56 +330,21 @@ await call.edit(
 
 call.form  # optional: Contains info about form
 ```
-> ⚠️ **Эти атрибуты недоступны в обычном обработчике.** В этом случае нужно пользоваться средствами aiogram и редактировать сообщение вручную, используя `await self.inline._bot.edit_message_text`!
-
-## Inline команды (@bot ...)
-Для обработки инлайн команд Hikka использует обработчики, созданные по шаблону, наподобие командам.
+## Inline commands (@bot ...)
 ```python
 from ..inline.types import InlineQuery
 
-async def <name>_inline_handler(self, query: InlineQuery) -> None:
+async def <name>_inline_handler(self, query: InlineQuery):
     # Process request
 ```
-Внутри объекта query доступен атрибут args, который содержит в себе текст, указанный после команды (@bot <name> **some text here**)
-
-Эти обработчики можно оборачивать в декораторы, прямо как команды. Для инлайн обработчиков доступны следующие декораторы:
+To get text, entered after the call, use `query.args`
+You can wrap these handlers with:
 - `@loader.support`
 - `@loader.sudo`
 - `@loader.owner`
 - `@loader.inline_everyone`
 
-Все они управляются пользователем с помощью команды `.inlinesec`, в том числе и глобальная маска.
-
-Отвечать на этот запрос **можно** так же, как и в `aiogram` (а можно воспользоваться встроенными методами, читай ниже). Для подробной информации, читай **их документацию**.
-
-Для примера привожу кусок кода из `inline.py`, отвечающий за вывод всех доступных команд:
-```python
-await query.answer(
-    [
-        InlineQueryResultArticle(
-            id=utils.rand(20),
-            title="Show available inline commands",
-            description=f"You have {len(_help.splitlines())} available command(-s)",
-            input_message_content=InputTextMessageContent(
-                f"<b>ℹ️ Available inline commands:</b>\n\n{_help}",
-                "HTML",
-                disable_web_page_preview=True,
-            ),
-            thumb_url="https://img.icons8.com/fluency/50/000000/info-squared.png",
-            thumb_width=128,
-            thumb_height=128,
-        )
-    ],
-    cache_time=0,
-)
-```
-В каждом из таких ответов необходимо указывать идентификатор. Чтобы не усложнять жизнь, можно импортировать генератор из встроенного модуля:
-```python
-from .. import utils
-```
-Затем можно указывать rand(20) в значении атрибута id
-
-### Полезные сокращения
+### Useful shortcuts
 
 - `await query.e400()` - Неверные аргументы
 - `await query.e403()` - Недостаточно прав для доступа к ресурсу
@@ -332,12 +352,11 @@ from .. import utils
 - `await query.e426()` - Необходимо обновление юзербота
 - `await query.e500()` - Ошибка модуля. Смотри логи
 
-### Правильный ответ на Inline запрос
+### Answer Inline query
 
-Вместо того, чтобы вручную вызывать `query.answer`, можно просто вернуть словарь с нужным ответом. Либо список из подобных словарей
-
-- `{"message": "<b>Текст сообщения</b>", "title": "Текстовый ответ"}` 
-- `{"photo": "https://i.imgur.com/hZIyI7v.jpeg", "title": "Фотография"}`
-- `{"video": "https://x0.at/wWN9.mp4", "title": "Видео"}`
-- `{"file": "https://x0.at/f7ps.pdf", "mime_type": "application/pdf", "title": "Документ"}`
-- `{"gif": "https://x0.at/Sey-.mp4", "title": "GIF-ка"}`
+You need to return dictionary with answer:
+- `{"message": "<b>Message text</b>", "title": "Text answer"}` 
+- `{"photo": "https://i.imgur.com/hZIyI7v.jpeg", "title": "Photo"}`
+- `{"video": "https://x0.at/wWN9.mp4", "title": "Video"}`
+- `{"file": "https://x0.at/f7ps.pdf", "mime_type": "application/pdf", "title": "Document"}`
+- `{"gif": "https://x0.at/Sey-.mp4", "title": "GIF animation"}`
