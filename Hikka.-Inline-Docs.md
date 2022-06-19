@@ -3,7 +3,7 @@
 - If module doesn't support FTG\GeekTG, specify `# scope: hikka_only`
 - If module requires certain Hikka version, use: `# scope: hikka_min 1.0.0`
 
-## Создание формы
+## Form creation
 To create message buttons, use [form manager](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/form.py#L46):
 
 ### Reference:
@@ -125,7 +125,7 @@ Buttons examples:
 
 > ⚠️ **If error occurs, no exception will be raised, only `False` returned !**
 
-## Галерея
+## Gallery
 There are [inline galleries](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L46)
 
 ### Reference:
