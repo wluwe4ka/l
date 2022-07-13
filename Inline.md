@@ -1,10 +1,5 @@
-## Scopes
-- Modules, which use **any** inline features should contain `# scope: inline`
-- If module doesn't support FTG\GeekTG, specify `# scope: hikka_only`
-- If module requires certain Hikka version, use: `# scope: hikka_min 1.0.0`
-
-## Form creation
-To create message buttons, use [form manager](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/form.py#L46):
+# Form
+To create message buttons, use [form manager](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/form.py#L55):
 
 ### Reference:
 ```python
@@ -26,7 +21,7 @@ async def form(
     mime_type: Optional[str] = None,
     video: Optional[str] = None,
     location: Optional[str] = None,
-    audio: Optional[str] = None,
+    audio: Optional[Union[dict, str]] = None,
     silent: Optional[bool] = False,
 ) -> Union[InlineMessage, bool]:
     """
@@ -54,7 +49,7 @@ async def form(
     :param location: Attach a map point to the form. List/tuple must be supplied (latitude, longitude)
                         Example: (55.749931, 48.742371)
                         ⚠️ If you pass this parameter, you'll need to pass empty string to `text` ⚠️
-    :param audio: Attach a audio to the form. URL must be supplied
+    :param audio: Attach a audio to the form. Dict or URL must be supplied
     :param silent: Whether the form must be sent silently (w/o "Loading inline form..." message)
     :return: If form is sent, returns :obj:`InlineMessage`, otherwise returns `False`
     """
@@ -83,6 +78,7 @@ await self.inline.form(
     force_me=False,  # optional: Allow other users to access form (all)
     always_allow=[659800858],  # optional: Permit users with IDs
     ttl=30,  # optional: Time to live of form in seconds
+    silent=True,  # optional: Send form silently
 )
 ```
 ![Без имени-1](https://user-images.githubusercontent.com/36935426/157850552-ff489e8e-3f64-4139-b1d6-b95c430707c0.png)
@@ -122,11 +118,31 @@ Buttons examples:
     "kwargs": {"arg1name": "arg1"},  # optional kwargs passed to callback
 }
 ```
+### Button with pre-defined action:
+```python
+{
+    "text": "Close form",
+    "action": "close",
+}
+```
+```python
+{
+    "text": "Unload form",
+    "action": "unload",
+}
+```
+```python
+{
+    "text": "Say `Thank you!`",
+    "action": "answer",
+    "text": "Thank you!",
+}
+```
 
 > ⚠️ **If error occurs, no exception will be raised, only `False` returned !**
 
-## Gallery
-There are [inline galleries](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L46)
+# Gallery
+There are [inline galleries](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/gallery.py#L55)
 
 ### Reference:
 ```python
@@ -193,7 +209,7 @@ await self.inline.gallery(
 > Instead of `generate_caption` you can pass string or list
 > Instead of `photo` you can pass list with urls
 ## InlineQuery Galleries
-To allow user to call galleries via inline query (@hikka_xxxxxx_bot), user (built-in method)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/query_gallery.py#L14]
+To allow user to call galleries via inline query (@hikka_xxxxxx_bot), use [built-in method](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/query_gallery.py#L23)
 
 ### Reference:
 ```python
@@ -247,8 +263,8 @@ async def catboy_inline_handler(self, query: InlineQuery):
     )
 
 ```
-## Inline list
-You can use (inline lists)[https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L30]
+# List
+You can use [inline lists](https://github.com/hikariatama/Hikka/blob/master/hikka/inline/list.py#L38)
 
 ### Reference:
 ```python
@@ -288,15 +304,15 @@ async def list(
 ```
 ### Example
 ```python
-async def meancmd(self, message: Message) -> None:
+async def meancmd(self, message: Message):
     """<term> - Find definition of the word in urban dictionary"""
     args = utils.get_args_raw(message)
 
     ...
 
     await self.inline.list(
-        message=message,
-        strings=[self.strings("meaning").format(args, mean) for mean in means],
+        message,
+        [self.strings("meaning").format(args, mean) for mean in means],
     )
 
 ```
@@ -330,7 +346,7 @@ await call.edit(
 
 call.form  # optional: Contains info about form
 ```
-## Inline commands (@bot ...)
+# Inline (@bot ...)
 ```python
 from ..inline.types import InlineQuery
 
@@ -352,7 +368,7 @@ You can wrap these handlers with:
 - `await query.e426()` - Необходимо обновление юзербота
 - `await query.e500()` - Ошибка модуля. Смотри логи
 
-### Answer Inline query
+# Inline query
 
 You need to return dictionary with answer:
 - `{"message": "<b>Message text</b>", "title": "Text answer"}` 
