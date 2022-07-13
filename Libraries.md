@@ -13,6 +13,8 @@ import logging
 
 
 class MusicDL_Lib(loader.Library):
+    developer = "@hikariatama"
+
     async def dl(self, full_name: str) -> bytes:
         try:
             q = await self._client.inline_query("@losslessrobot", full_name)
@@ -71,6 +73,9 @@ import logging
 # Every library class name must end with `Lib` and be subclass of `loader.Library`
 #            👇         👇
 class ExampleLib(loader.Library):
+    # You can specify the developer of library in this way:
+    developer = "@hikariatama"
+
     # Define library config directly in async `init`, not in `__init__`
 
     # ----------------------------------------------
@@ -162,4 +167,5 @@ async def client_ready(self, client, db):
 # library becomes available
 
 # --------------------------------------------------------------
+
 ```
