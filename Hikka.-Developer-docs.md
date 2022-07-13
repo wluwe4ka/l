@@ -29,6 +29,12 @@ It's called when module is inited. Frequently used to start handlers, init APIs 
 
 
 ```python
+async def on_dlmod(self, client, db):
+```
+It's called when module is *installed*. Frequently used to collect stats, join required channels.
+
+
+```python
 async def on_unload(self):
 ```
 It's called when module is being unloaded. Here you can stop loops, exit APIs etc.
@@ -63,23 +69,19 @@ Get database value and replace it with `default` if not present:
 ```python
 self.get(key: str, default: Any = None)
 ```
+Example:
+```python
+self.get("token")
+self.get("token", False")
+self.get("state", True)
+```
 ---
 Set database value
 ```python
 self.set(key: str, value: str)
 ```
----
-# FastUploader
 Example:
 ```python
-async def downloadcmd(self, message: Message):
-    await self.fast_download(reply.document)
-```
-
-```python
-async def uploadcmd(self, message: Message):
-    file = io.BytesIO("this can be a file".encode("utf-8"))
-    file.name = "file.txt"
-
-    await self.fast_upload(file)
+self.set("token", None)
+self.set("state", True)
 ```
