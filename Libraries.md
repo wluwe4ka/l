@@ -66,6 +66,7 @@ class MusicDL_Lib(loader.Library):
 
 from .. import loader
 import random
+import logging
 
 # Every library class name must end with `Lib` and be subclass of `loader.Library`
 #            👇         👇
@@ -90,6 +91,7 @@ class ExampleLib(loader.Library):
                 validator=loader.validators.String(),
             )
         )
+
     # ----------------------------------------------
 
     # ----------------------------------------------
@@ -106,35 +108,30 @@ class ExampleLib(loader.Library):
 
     async def example_async(self):
         await self._client.send_message("me", "Hello!")
-    
+
     # ----------------------------------------------
 
 
 # --------------------------------------------------------------
 # Then in your module code you can access this library in this way:
 
-from .. import utils
-import logging
-
-
 async def client_ready(self, client, db):
     ...
-    self.example = await utils.import_lib(
-        client,
-        "https://link.to.your.server/example.py",
-    )
+    self.example = await self.import_lib("https://link.to.your.server/example.py")
 
     logging.info(self.example.example_method())
     await self.example.example_async()
 
-# If library throws an error, or is unavailable (404\403 etc), 
+
+# If library throws an error, or is unavailable (404\403 etc),
 # module will be UNLOADED FROM DB and will not be loaded again
 # If you want to avoid this, use example below, or handle errors
 # in your module code:
 
+
 async def client_ready(self, client, db):
     try:
-        self.example = await utils.import_lib(...)
+        self.example = await self.import_lib(...)
     except Exception:
         self.example = None
 
@@ -143,20 +140,22 @@ async def client_ready(self, client, db):
     else:
         logging.warning("Library is not available along with method from it")
 
+
 # --------------------------------------------------------------
 # If you don't handle errors while importing (see example above), use `suspend_on_error` param
 # to import the library:
 
+
 async def client_ready(self, client, db):
     ...
-    self.example = await utils.import_lib(
-        client,
+    self.example = await self.import_lib(
         "https://link.to.your.server/example.py",
         suspend_on_error=True,  # 👈👈👈👈👈👈👈👈👈👈👈👈👈👈👈
     )
 
     logging.info(self.example.example_method())
     await self.example.example_async()
+
 
 # This way, if Hikka can't load library, it'll suspend your module
 # It won't be unloaded from db, so user will get it after restart, if
