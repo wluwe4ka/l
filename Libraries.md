@@ -76,17 +76,9 @@ class ExampleLib(loader.Library):
     # You can specify the developer of library in this way:
     developer = "@hikariatama"
 
-    # Define library config directly in async `init`, not in `__init__`
+    # Declare library config in `__init__`:
 
-    # ----------------------------------------------
-    # 🚫 Wrong:
-    # def __init__(self):
-    #     self.config = loader.LibraryConfig(...)
-    # ----------------------------------------------
-
-    # ----------------------------------------------
-    # ✅ Right:
-    async def init(self):
+    def __init__(self):
         # loader.ModuleConfig will throw!
         self.config = loader.LibraryConfig(
             loader.ConfigValue(
@@ -96,6 +88,9 @@ class ExampleLib(loader.Library):
                 validator=loader.validators.String(),
             )
         )
+
+    async def init(self):
+        ...  # Do some stuff for init
 
     # ----------------------------------------------
 
