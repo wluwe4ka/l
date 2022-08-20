@@ -80,6 +80,13 @@ For every decorator in this section you can pass:
 - `only_channels` - Capture only messages with channels
 - `only_groups` - Capture only messages with groups
 - `only_pm` - Capture only messages with private chats
+- `startswith` - Capture only messages that start with given text
+- `endswith` - Capture only messages that end with given text
+- `contains` - Capture only messages that contain given text
+- `regex` - Capture only messages that match given regex
+- `func` - Capture only messages that pass given function
+- `from_id` - Capture only messages from given user
+- `chat_id` - Capture only messages from given chat
   
 Examples:
 - `@loader.watcher(out=True, only_channels=True, only_photos=True)` - Will capture only outgoing messages in channels, which contain photos
